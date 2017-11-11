@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        body {
+            background-color: grey;
+        }
+        
+        #game {
+            border: 1px solid black;
+            background-color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="game" width="800px" height="600px">
+
+    </canvas>
+    <script src="scripts/PVector.js"></script>
+    <script src="scripts/globals.js"></script>
+    <script src="scripts/TextureManager.js"></script>
+    <script src="scripts/Mover.js"></script>
+    <script src = "scripts/Coin.js"></script>
+    <script src="scripts/Board.js"></script>
+    <script src="scripts/ACard.js"></script>
+    <script src="scripts/MainClass.js"></script>
+    <script src="scripts/DirectionCard.js"></script>
+    <script src="scripts/CardManager.js"></script>
+    <script src="scripts/Player.js"></script>
+    <script>
+        
+        (function() {
+            (new Main()).start();
+        })();
+        
+        
+    </script>
+</body>
+</html>
+
