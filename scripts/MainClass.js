@@ -5,7 +5,9 @@ class Main {
         this.key = null;
         this.lastUpdateTime = 0;
         this.acDelta = 0;
-
+        this.roundNb = 1;
+        this.maxRound = gameData.maxRound;
+        this.isAnim = false;
         this.board = new Board(10, 10, 0, 0);
 
         this.mover = [new Mover(0, 5, "blue"),
@@ -13,12 +15,23 @@ class Main {
                      ];
         canvas.addEventListener('click', this.canvaClick.bind(this), false);
 
+
+
+        this.player = new Player(1, "Name", true, this.mover[0], this);
+
         this.coins = [];
         for (var i = 0; i < 6; i++) {
-            this.coins[i] = new Coin(Math.floor(Math.random() * 9), Math.floor(Math.random() * 9), textures.coin);
+            do {
+                var cX = Math.floor(Math.random() * 9);
+                var cY = Math.floor(Math.random() * 9);
+            } while (!this.tileIsEmpty(cX, cY));
+
+            this.coins[i] = new Coin(cX, cY, textures.coin);
         }
 
-        this.player = new Player("Name", true, this.mover[0], this);
+        this.confirmButton = new Button(WIDTH / 2 - ACard.w, HEIGHT - CURRENTROUND_PADDING, 2 * (ACard.w + 5), 30, "#5a5", "Confirm", () => {
+            alert("yo")
+        });
     }
 
     start() {
@@ -50,6 +63,10 @@ class Main {
         this.coins.forEach(function (c) {
             c.update();
         });
+
+        //activation du bouton confirm
+        this.confirmButton.active = this.player.isPlaying && this.player.NbSelectedCards == 2;
+
     }
 
     draw() {
@@ -69,6 +86,12 @@ class Main {
         this.player.displayCards();
 
         this.drawText();
+        this.drawSelectionArea();
+        this.confirmButton.draw();
+
+        if (this.isAnim) {
+            this.drawCurrentCard(this.currentCard);
+        }
     }
 
 
@@ -80,20 +103,70 @@ class Main {
         CTX.textBaseline = "hanging";
         CTX.textAlign = "left";
         CTX.fillText("Coins left: " + this.coins.length, PADDING, PADDING);
-        
-        
+
+
         //Section titles
         var sectionY = HEIGHT - ACard.h - PADDING - 20;
-        //cards
+        //Your cards
         CTX.textAlign = "center";
         CTX.fillText("Your cards", (4 * ACard.w + PADDING) / 2, sectionY);
-        //Selection
+        //Selection title
         CTX.textAlign = "center";
-        CTX.fillText("CurrentRound", WIDTH/2, sectionY);
-        
+        CTX.fillText("Round", WIDTH / 2, sectionY - CURRENTROUND_PADDING);
+
+        //Points title
+        var midSection = HEIGHT - PADDING - ACard.h / 2,
+            lastThird = WIDTH / 6 * 5;
+        CTX.fillText("Points", WIDTH / 6 * 5, sectionY);
+
+
         //Points
-        CTX.fillText("Points", WIDTH/6*5, sectionY);
-        
+        CTX.textAlign = "end";
+        CTX.font = "50px Arial";
+        CTX.textBaseline = "middle";
+        CTX.fillStyle = "blue";
+        CTX.fillText(gameData.owner_points, lastThird - 20, midSection);
+
+        CTX.textAlign = "start";
+        CTX.fillStyle = "green";
+        CTX.fillText(gameData.opponent_points, lastThird + 20, midSection);
+
+        CTX.font = "30px Arial";
+        CTX.textAlign = "center";
+        CTX.fillStyle = "black";
+        CTX.fillText("vs", lastThird, midSection);
+    }
+
+
+    drawSelectionArea() {
+        var x = WIDTH / 2 - 2 * ACard.w;
+        var y = HEIGHT - PADDING - ACard.h - CURRENTROUND_PADDING;
+        var selCards = this.player.selectedCards;
+
+        for (var i = 0; i < 4 * ACard.w; i += ACard.w + 5) {
+            var idx = Math.floor(i / ACard.w);
+            var xpos = x + ACard.w * idx + idx * 5;
+
+            if (this.roundNb > 1) {
+                gameData.gameStack[(this.roundNb - 2) * 4 + idx].drawAt(xpos, y);
+
+                CTX.fillStyle = "rgba(255,255,255, 0.75)";
+                CTX.fillRect(xpos, y, ACard.w, ACard.h);
+            }
+
+            if (this.player.NbSelectedCards > 0) {
+
+                var card = selCards[idx];
+                if (card != undefined) {
+                    card.drawAt(xpos, y);
+                }
+            }
+            CTX.setLineDash([5, 3]);
+            CTX.lineWidth = 1;
+            CTX.strokeStyle = i < 2 * ACard.w ? "blue" : "green";
+
+            CTX.strokeRect(x + i, y, ACard.w, ACard.h);
+        }
     }
 
 
@@ -101,18 +174,46 @@ class Main {
         var x = event.pageX - canvas.offsetLeft,
             y = event.pageY - canvas.offsetTop;
 
-        var isoDest = screenToIsometric(x, y);
-        this.mover[0].destination.x = Math.floor(Math.random() * 9);
-        this.mover[0].destination.y = Math.floor(Math.random() * 9);
-
-
-        //Verif si selection de carte
-        if (y >= HEIGHT - (ACard.h + PADDING) && y <= HEIGHT - PADDING && x <= 4 * ACard.w + PADDING && x >= PADDING) {
-            var selected = Math.floor((x-PADDING) / ACard.w);
-            console.log("selected: ", selected);
-            this.player.Cards[selected].toggleSelect();
+        if (this.player.isPlaying) {
+            //Verif si selection de carte
+            if (y >= HEIGHT - (ACard.h + PADDING) && y <= HEIGHT - PADDING && x <= 4 * ACard.w + PADDING && x >= PADDING) {
+                this.player.selectionClick(x, y);
+            } //sinon si bouton confirm
+            else if (this.confirmButton.active && isColliding(x, y, 0, 0, this.confirmButton.x, this.confirmButton.y, this.confirmButton.w, this.confirmButton.h)) {
+                this.player.isPlaying = false;
+                gameData.gameStack = gameData.gameStack.concat(this.player.selectedCards);
+            }
         }
-
     }
 
+
+
+    drawCurrentCard(card) {
+        var x = PADDING;
+        var y = HEIGHT / 2;
+
+        CTX.setLineDash([5, 3]);
+        card.drawAt(x, y);
+
+        CTX.strokeStyle = card.playerId == gameData.owner_id ? "blue" : "green";
+        CTX.strokeRect(x, y, ACard.w, ACard.h);
+    }
+
+
+    tileIsEmpty(x, y) {
+        var ok = true;
+        this.mover.forEach((m) => {
+            if (m.gridX === x && m.gridY === y) {
+                ok = false;
+            }
+        });
+
+        this.coins.forEach((c) => {
+            if (c.gridX === x && c.gridY === y) {
+                ok = false;
+            }
+        });
+
+        return ok;
+    }
 }

@@ -3,20 +3,24 @@ const CTX = canvas.getContext("2d");
 
 const HEIGHT = canvas.height;
 const WIDTH = canvas.width;
+const BOARD_W = 9;
+const BOARD_H =9;
 const TILE_H = 48;
 const TILE_SURFACE_H = 32;
 const TILE_W = 64;
 const INTERVAL = 30;
 const Y_OFFSET = 50;
 const PADDING = 20;
+const CURRENTROUND_PADDING = 80;
 
 var gameData = {
-    owner_id:0,
-    opponent_id: 0,
-    opponent_move: [],
-    owner_move: [],
-    gameStack:[],
+    owner_id:1,
+    opponent_id: 2,
+    gameStack: new Array(0),
     winner_id: 0,    
+    owner_points: 0,
+    opponent_points: 0,
+    maxRound: 3
 };
 
 function isometricToScreen(x, y){
@@ -31,6 +35,13 @@ var _y = (y / (TILE_SURFACE_H/2) - x / (TILE_W/2)) /2;
     return {x:_x, y:_y}
 }
 
+function isColliding(x1,y1,w1,h1,x2,y2,w2,h2){
+    return (
+        x1 < x2+w2 && x1+w1 >x2 && 
+       y1 < y2+h2 && y1+h1 > y2
+    );
+    
+}
 window.requestAnimFrame = (function(){
 			return window.requestAnimationFrame ||
 			window.webkitRequestAnimationFrame ||
@@ -48,3 +59,4 @@ window.requestAnimFrame = (function(){
 function map(value, start1, stop1, start2, stop2) {
     return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 }
+
