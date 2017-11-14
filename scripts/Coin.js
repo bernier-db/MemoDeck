@@ -1,6 +1,6 @@
 class Coin extends Mover {
     constructor(_gridX, _gridY, texture) {
-        super(_gridX, _gridY, "");
+        super(null, _gridX, _gridY, "");
         
         this.origW = 44;
         this.origH = 44;

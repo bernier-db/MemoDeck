@@ -44,7 +44,7 @@
         var opponent = new Player(2, "op", false, game.mover[1], game);
 
         function newRound(e) {
-            console.log("new round");
+
             var cards = [
                 CardManager.pickCard(opponent.id),
                 CardManager.pickCard(opponent.id)
@@ -60,7 +60,7 @@
             game.isAnim = true;
             
             var interval = setInterval(function() {
-                console.log(game.mover[0].destination, game.mover[0].gridX,game.mover[0].gridY);
+
                 if (game.mover[0].isAtDestination && game.mover[1].isAtDestination) {
                     
                     var id = gameData.gameStack[idx].playerId;
@@ -69,7 +69,7 @@
                     pl.character.applyCard(gameData.gameStack[idx].direction, gameData.gameStack[idx].distance)
                     
                     game.currentCard = gameData.gameStack[idx];
-                    console.log(idx,gameData.gameStack.length );
+
                     if (idx == gameData.gameStack.length - 1) {
                        this.isAmin = false; clearInterval(interval);
                         

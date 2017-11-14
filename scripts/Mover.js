@@ -1,5 +1,5 @@
 class Mover {
-    constructor(_gridx, _gridy, color) {
+    constructor(playerId, _gridx, _gridy, color) {
         this.gridX = _gridx;
         this.gridY = _gridy;
         this.h = 20;
@@ -19,17 +19,17 @@ class Mover {
         this.accForce = 0.5;
         this.velocity = new PVector(0, 0);
         this.acc = new PVector();
+        this.playerId = playerId;
     }
 
     get isAtDestination() {
-        return Math.round(this.gridX) === this.destination.x && Math.round(this.gridY) === this.destination.y;
+        return Math.floor(this.gridX+0.1) === this.destination.x && Math.floor(this.gridY+0.1) === this.destination.y;
     }
 
 
 
     update() {
 
-        //        if (!this.isAtDestination) {
         this.move();
         this.velocity.add(this.acc);
         this.acc.mult(0);
@@ -40,15 +40,8 @@ class Mover {
         var iso = screenToIsometric(this.x, this.centerY);
         this.gridX = iso.x;
         this.gridY = iso.y;
-        //        } else {
 
-
-        //            /*** Conversion de position **/
-        //            var screenPos = isometricToScreen(this.gridX, this.gridY);
-        //            this.x = screenPos.x;
-        //            this.centerY = screenPos.y + TILE_SURFACE_H / 2;
-        //            /********************************/
-        //        }
+        this.verifCoin();
     }
 
 
@@ -68,10 +61,10 @@ class Mover {
                 this.destination.x += dist;
                 break;
         }
-        if (this.destination.y > BOARD_H) this.destination.y = BOARD_H;
+        if (this.destination.y > BOARD_H-1) this.destination.y = BOARD_H-1;
         else if (this.destination.y < 0)
             this.destination.y = 0;
-         if (this.destination.x > BOARD_W) this.destination.x = BOARD_W;
+        if (this.destination.x > BOARD_W-1) this.destination.x = BOARD_W-1;
         else if (this.destination.x < 0)
             this.destination.x = 0;
     }
@@ -92,7 +85,7 @@ class Mover {
         } else {
             this.desired.mult(this.maxSpeed);
         }
-        //this.applyForce(this.desired);
+
 
         var steer = PVector.staticSub(this.desired, this.velocity);
         steer.limit(this.accForce);
@@ -142,6 +135,31 @@ class Mover {
         CTX.restore();
     }
 
+    verifCoin() {
+        var idxCol = [];
+        
+        if(this.playerId == gameData.owner_id)
+        console.log(this.gridX, this.gridY);
+        
+        gameData.coins.forEach((c, i) => {
+            
+            if (Math.round(this.gridX) == c.x &&
+                Math.round(this.gridY) == c.y) {
+                console.log("collision coin");
+                if (this.playerId == gameData.owner_id) {
+                    gameData.owner_points++;
+                } else {
+                    gameData.opponent_points++;
+                }
+                idxCol.push(i);
+            }
+        });
 
+        for (var i = idxCol.length - 1; i >= 0; i--){
+            gameData.coins.splice(idxCol[i], 1);
+            game.coins.splice(idxCol[i], 1);
+            
+        }
+    }
 
 }

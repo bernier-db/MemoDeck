@@ -10,8 +10,8 @@ class Main {
         this.isAnim = false;
         this.board = new Board(10, 10, 0, 0);
 
-        this.mover = [new Mover(0, 5, "blue"),
-                      new Mover(9, 9, "red")
+        this.mover = [new Mover(gameData.owner_id, 9, 9, "blue"),
+                      new Mover(gameData.opponent_id, 0, 0, "red")
                      ];
         canvas.addEventListener('click', this.canvaClick.bind(this), false);
 
@@ -20,13 +20,21 @@ class Main {
         this.player = new Player(1, "Name", true, this.mover[0], this);
 
         this.coins = [];
-        for (var i = 0; i < 6; i++) {
-            do {
-                var cX = Math.floor(Math.random() * 9);
-                var cY = Math.floor(Math.random() * 9);
-            } while (!this.tileIsEmpty(cX, cY));
-
-            this.coins[i] = new Coin(cX, cY, textures.coin);
+        
+        for (var i = 0; i < 80; i++) {
+            var cX, cY;
+            if(this.player.isHost)
+            {
+                do 
+                {
+                    cX = Math.floor(Math.random() * 10);
+                     cY = Math.floor(Math.random() * 10);
+                } 
+                while (!this.tileIsEmpty(cX, cY));
+                gameData.coins.push({x:cX, y:cY});
+            }
+            this.coins.push(new Coin(gameData.coins[i].x, gameData.coins[i].y, textures.coin));
+            
         }
 
         this.confirmButton = new Button(WIDTH / 2 - ACard.w, HEIGHT - CURRENTROUND_PADDING, 2 * (ACard.w + 5), 30, "#5a5", "Confirm", () => {
