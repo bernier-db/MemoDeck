@@ -5,11 +5,11 @@ var TextureManager = (function() {
 
     function createInstance() {
         var cardTexture = new Image();
-        cardTexture.src = "../images/cards.png";
+        cardTexture.src = "images/cards.png";
         var tileset = new Image();
-        tileset.src = "../images/tiles.png";
+        tileset.src = "images/tiles.png";
         var coinTexture = new Image();
-        coinTexture.src = "../images/coin_sprite.png";
+        coinTexture.src = "images/coin_sprite.png";
 
         instance = {
             cards: cardTexture,

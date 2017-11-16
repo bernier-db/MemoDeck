@@ -23,7 +23,7 @@
     </canvas>
 
     <button type="button" onclick="newRound()">Start new round</button>
-    <button type="button" onclick="playRound()">Animate</button>
+
 
     <script src="scripts/PVector.js"></script>
     <script src="scripts/globals.js"></script>
@@ -37,49 +37,11 @@
     <script src="scripts/DirectionCard.js"></script>
     <script src="scripts/CardManager.js"></script>
     <script src="scripts/Player.js"></script>
+    <script src="scripts/RoundManagement.js"></script>
     <script>
-        var game = new Main();
-        game.start();
+        
 
-        var opponent = new Player(2, "op", false, game.mover[1], game);
-
-        function newRound(e) {
-
-            var cards = [
-                CardManager.pickCard(opponent.id),
-                CardManager.pickCard(opponent.id)
-            ];
-
-            gameData.gameStack = gameData.gameStack.concat(cards);
-            game.roundNb++;
-            game.player.startRound();
-        }
-
-        function playRound(e) {
-            var idx = 0;
-            game.isAnim = true;
-            
-            var interval = setInterval(function() {
-
-                if (game.mover[0].isAtDestination && game.mover[1].isAtDestination) {
-                    
-                    var id = gameData.gameStack[idx].playerId;
-
-                    var pl = opponent.id == id ? opponent : game.player;
-                    pl.character.applyCard(gameData.gameStack[idx].direction, gameData.gameStack[idx].distance)
-                    
-                    game.currentCard = gameData.gameStack[idx];
-
-                    if (idx == gameData.gameStack.length - 1) {
-                       this.isAmin = false; clearInterval(interval);
-                        
-                    }
-                    idx++;
-                }
-                
-            },1);
-
-        }
+        
 
         
         

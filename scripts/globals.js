@@ -21,6 +21,7 @@ var gameData = {
     owner_points: 0,
     opponent_points: 0,
     maxRound: 3,
+    roundsLeft: 3,
     coins: []
 };
 
@@ -60,4 +61,6 @@ window.requestAnimFrame = (function(){
 function map(value, start1, stop1, start2, stop2) {
     return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 }
+
+
 

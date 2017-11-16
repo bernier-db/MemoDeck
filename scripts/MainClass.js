@@ -8,6 +8,7 @@ class Main {
         this.roundNb = 1;
         this.maxRound = gameData.maxRound;
         this.isAnim = false;
+        this.over = false;
         this.board = new Board(10, 10, 0, 0);
 
         this.mover = [new Mover(gameData.owner_id, 9, 9, "blue"),
@@ -20,21 +21,22 @@ class Main {
         this.player = new Player(1, "Name", true, this.mover[0], this);
 
         this.coins = [];
-        
+
         for (var i = 0; i < 80; i++) {
             var cX, cY;
-            if(this.player.isHost)
-            {
-                do 
-                {
+            if (this.player.isHost) {
+                do {
                     cX = Math.floor(Math.random() * 10);
-                     cY = Math.floor(Math.random() * 10);
-                } 
+                    cY = Math.floor(Math.random() * 10);
+                }
                 while (!this.tileIsEmpty(cX, cY));
-                gameData.coins.push({x:cX, y:cY});
+                gameData.coins.push({
+                    x: cX,
+                    y: cY
+                });
             }
             this.coins.push(new Coin(gameData.coins[i].x, gameData.coins[i].y, textures.coin));
-            
+
         }
 
         this.confirmButton = new Button(WIDTH / 2 - ACard.w, HEIGHT - CURRENTROUND_PADDING, 2 * (ACard.w + 5), 30, "#5a5", "Confirm", () => {
@@ -49,8 +51,9 @@ class Main {
         var delta = Date.now() - this.lastUpdateTime;
         if (this.acDelta > INTERVAL) {
             this.acDelta = 0;
-            //Dessine un frame    
-            this.update();
+            //Dessine un frame 
+            if(!this.over)
+                this.update();
             this.draw();
         } else {
             this.acDelta += delta;
@@ -75,6 +78,23 @@ class Main {
         //activation du bouton confirm
         this.confirmButton.active = this.player.isPlaying && this.player.NbSelectedCards == 2;
 
+        gameData.roundsLeft = gameData.maxRound - (this.roundNb - 1);
+
+        //Verif end
+        if (gameData.roundsLeft <= 0) {
+
+            var dif = gameData.owner_points - gameData.opponent_points;
+            if (gameData.gameStack.length === 4 * gameData.maxRound) {
+                if (!this.isAnim) {
+                    playRound();
+
+                }
+            }
+            else if (gameData.gameStack.length === 0 && dif != 0) {
+                this.over = true;
+                gameData.winner_id = dif > 0 ? gameData.owner_id : gameData.opponent_points;
+            }
+        }
     }
 
     draw() {
@@ -90,15 +110,20 @@ class Main {
         this.mover.forEach(function (m) {
             m.draw();
         });
-
-        this.player.displayCards();
-
+        
+        if(!this.over){
+            this.player.displayCards();
+            this.drawSelectionArea();
+        }
+        
         this.drawText();
-        this.drawSelectionArea();
         this.confirmButton.draw();
 
         if (this.isAnim) {
             this.drawCurrentCard(this.currentCard);
+        }
+        if (this.over) {
+            this.drawEnd();
         }
     }
 
@@ -112,6 +137,8 @@ class Main {
         CTX.textAlign = "left";
         CTX.fillText("Coins left: " + this.coins.length, PADDING, PADDING);
 
+        //Rounds left
+        CTX.fillText("Rounds left: " + gameData.roundsLeft, PADDING, PADDING + 25);
 
         //Section titles
         var sectionY = HEIGHT - ACard.h - PADDING - 20;
@@ -182,7 +209,7 @@ class Main {
         var x = event.pageX - canvas.offsetLeft,
             y = event.pageY - canvas.offsetTop;
 
-        if (this.player.isPlaying) {
+        if (this.player.isPlaying && !this.over && !this.isAnim) {
             //Verif si selection de carte
             if (y >= HEIGHT - (ACard.h + PADDING) && y <= HEIGHT - PADDING && x <= 4 * ACard.w + PADDING && x >= PADDING) {
                 this.player.selectionClick(x, y);
@@ -190,6 +217,9 @@ class Main {
             else if (this.confirmButton.active && isColliding(x, y, 0, 0, this.confirmButton.x, this.confirmButton.y, this.confirmButton.w, this.confirmButton.h)) {
                 this.player.isPlaying = false;
                 gameData.gameStack = gameData.gameStack.concat(this.player.selectedCards);
+                if (!this.player.isHost) {
+                    gameData.roundsLeft--;
+                }
             }
         }
     }
@@ -205,6 +235,19 @@ class Main {
 
         CTX.strokeStyle = card.playerId == gameData.owner_id ? "blue" : "green";
         CTX.strokeRect(x, y, ACard.w, ACard.h);
+    }
+
+
+    drawEnd() {
+        var txt = this.player.id == gameData.winner_id ? "You Won!" : "You lost!";
+        CTX.fillStyle = "rgba(0,0,0,0.7)";
+        CTX.fillRect(0, 0, WIDTH, HEIGHT);
+        
+        CTX.textAlign="center";
+        CTX.textBaseline="middle";
+        CTX.fillStyle ="white";
+        CTX.fillText(txt, WIDTH/2, HEIGHT/2);
+
     }
 
 

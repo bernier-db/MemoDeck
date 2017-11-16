@@ -23,9 +23,12 @@ class Mover {
     }
 
     get isAtDestination() {
-        return Math.floor(this.gridX+0.1) === this.destination.x && Math.floor(this.gridY+0.1) === this.destination.y;
+        return Math.floor(this.gridX*10)/10 === this.destination.x && Math.floor(this.gridY*10)/10 === this.destination.y;
     }
 
+     get isMoving(){
+        return this.velocity.mag() > 1;
+    }
 
 
     update() {
@@ -138,14 +141,12 @@ class Mover {
     verifCoin() {
         var idxCol = [];
         
-        if(this.playerId == gameData.owner_id)
-        console.log(this.gridX, this.gridY);
+
         
         gameData.coins.forEach((c, i) => {
             
             if (Math.round(this.gridX) == c.x &&
                 Math.round(this.gridY) == c.y) {
-                console.log("collision coin");
                 if (this.playerId == gameData.owner_id) {
                     gameData.owner_points++;
                 } else {

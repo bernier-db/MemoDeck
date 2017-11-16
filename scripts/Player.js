@@ -36,7 +36,10 @@ class Player {
     toggleIsPlaying() {
         this.isPlaying = !this.isPlaging;
     }
-
+    
+   get charIsMoving(){
+       return this.character.isMoving;
+   }
 
     selectCard(idx) {
         this.cards[idx].selected = true;
