@@ -29,7 +29,7 @@ class Coin extends Mover {
             this.origW,
             this.origH,
             this.x - this.w/2,
-            this.y + 15,
+            this.centerY-5,
             this.w,
             this.h);
 
