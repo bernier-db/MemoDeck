@@ -17,7 +17,7 @@ class Coin extends Mover {
     }
     
     draw() {
-        this.bounce();
+        //this.bounce();
 
         CTX.save();
         CTX.translate(WIDTH / 2, Y_OFFSET);
